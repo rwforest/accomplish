@@ -5,7 +5,7 @@ export const ZAI_ENDPOINTS: Record<ZaiRegion, string> = {
   international: 'https://api.z.ai/api/coding/paas/v4',
 };
 
-export type ProviderType = 'anthropic' | 'openai' | 'openrouter' | 'google' | 'xai' | 'ollama' | 'deepseek' | 'moonshot' | 'zai' | 'azure-foundry' | 'custom' | 'bedrock' | 'litellm' | 'minimax' | 'lmstudio';
+export type ProviderType = 'anthropic' | 'openai' | 'openrouter' | 'google' | 'xai' | 'ollama' | 'deepseek' | 'moonshot' | 'zai' | 'azure-foundry' | 'databricks' | 'custom' | 'bedrock' | 'litellm' | 'minimax' | 'lmstudio';
 
 export type ApiKeyProvider =
   | 'anthropic'
@@ -17,6 +17,7 @@ export type ApiKeyProvider =
   | 'moonshot'
   | 'zai'
   | 'azure-foundry'
+  | 'databricks'
   | 'custom'
   | 'bedrock'
   | 'litellm'
@@ -39,6 +40,7 @@ export const ALLOWED_API_KEY_PROVIDERS: ReadonlySet<string> = new Set<string>([
   'moonshot',
   'zai',
   'azure-foundry',
+  'databricks',
   'custom',
   'bedrock',
   'litellm',
@@ -107,6 +109,13 @@ export interface AzureFoundryConfig {
   baseUrl: string;
   deploymentName: string;
   authType: 'api-key' | 'entra-id';
+  enabled: boolean;
+  lastValidated?: number;
+}
+
+export interface DatabricksConfig {
+  workspaceUrl: string;
+  endpointName: string;
   enabled: boolean;
   lastValidated?: number;
 }

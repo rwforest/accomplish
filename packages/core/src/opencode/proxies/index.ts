@@ -20,3 +20,11 @@ export {
   hasValidToken as hasValidAzureToken,
   getTokenExpiry as getAzureTokenExpiry,
 } from './azure-token-manager.js';
+
+export {
+  ensureDatabricksProxy,
+  stopDatabricksProxy,
+  isDatabricksProxyRunning,
+  transformDatabricksRequestBody,
+} from './databricks-proxy.js';
+export type { DatabricksProxyInfo } from './databricks-proxy.js';

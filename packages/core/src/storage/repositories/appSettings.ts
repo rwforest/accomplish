@@ -4,6 +4,7 @@ import type {
   LiteLLMConfig,
   AzureFoundryConfig,
   LMStudioConfig,
+  DatabricksConfig,
 } from '@accomplish/shared';
 import { getDatabase } from '../database.js';
 import { safeParseJsonWithFallback } from '../../utils/json.js';
@@ -17,6 +18,7 @@ interface AppSettingsRow {
   litellm_config: string | null;
   azure_foundry_config: string | null;
   lmstudio_config: string | null;
+  databricks_config: string | null;
   openai_base_url: string | null;
 }
 
@@ -28,6 +30,7 @@ export interface AppSettings {
   litellmConfig: LiteLLMConfig | null;
   azureFoundryConfig: AzureFoundryConfig | null;
   lmstudioConfig: LMStudioConfig | null;
+  databricksConfig: DatabricksConfig | null;
   openaiBaseUrl: string;
 }
 
@@ -141,6 +144,23 @@ export function setLMStudioConfig(config: LMStudioConfig | null): void {
   );
 }
 
+export function getDatabricksConfig(): DatabricksConfig | null {
+  const row = getRow();
+  if (!row.databricks_config) return null;
+  try {
+    return JSON.parse(row.databricks_config) as DatabricksConfig;
+  } catch {
+    return null;
+  }
+}
+
+export function setDatabricksConfig(config: DatabricksConfig | null): void {
+  const db = getDatabase();
+  db.prepare('UPDATE app_settings SET databricks_config = ? WHERE id = 1').run(
+    config ? JSON.stringify(config) : null
+  );
+}
+
 export function getOpenAiBaseUrl(): string {
   const row = getRow();
   return row.openai_base_url || '';
@@ -162,6 +182,7 @@ export function getAppSettings(): AppSettings {
     litellmConfig: safeParseJsonWithFallback<LiteLLMConfig>(row.litellm_config),
     azureFoundryConfig: safeParseJsonWithFallback<AzureFoundryConfig>(row.azure_foundry_config),
     lmstudioConfig: safeParseJsonWithFallback<LMStudioConfig>(row.lmstudio_config),
+    databricksConfig: safeParseJsonWithFallback<DatabricksConfig>(row.databricks_config),
     openaiBaseUrl: row.openai_base_url || '',
   };
 }
@@ -177,6 +198,7 @@ export function clearAppSettings(): void {
       litellm_config = NULL,
       azure_foundry_config = NULL,
       lmstudio_config = NULL,
+      databricks_config = NULL,
       openai_base_url = ''
     WHERE id = 1`
   ).run();

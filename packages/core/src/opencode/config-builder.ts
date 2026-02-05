@@ -12,10 +12,11 @@ import {
   PROVIDER_ID_TO_OPENCODE,
 } from '@accomplish/shared';
 import type { ProviderConfig, ProviderModelConfig } from './config-generator.js';
-import { ensureAzureFoundryProxy, ensureMoonshotProxy } from './proxies/index.js';
+import { ensureAzureFoundryProxy, ensureMoonshotProxy, ensureDatabricksProxy } from './proxies/index.js';
 import {
   getOllamaConfig,
   getLMStudioConfig,
+  getDatabricksConfig,
   getProviderSettings,
   getActiveProviderModel,
   getConnectedProviderIds,
@@ -124,7 +125,7 @@ export async function buildProviderConfigs(
   const activeModel = getActiveProviderModel();
   const providerConfigs: ProviderConfig[] = [];
 
-  const baseProviders = ['anthropic', 'openai', 'openrouter', 'google', 'xai', 'deepseek', 'moonshot', 'zai-coding-plan', 'amazon-bedrock', 'minimax'];
+  const baseProviders = ['anthropic', 'openai', 'openrouter', 'google', 'xai', 'deepseek', 'moonshot', 'zai-coding-plan', 'amazon-bedrock', 'minimax', 'databricks'];
   let enabledProviders = baseProviders;
 
   if (connectedIds.length > 0) {
@@ -352,6 +353,60 @@ export async function buildProviderConfigs(
         models,
       });
       console.log('[OpenCode Config Builder] LM Studio (legacy) configured:', Object.keys(models));
+    }
+  }
+
+  // Databricks provider
+  const databricksProvider = providerSettings.connectedProviders.databricks;
+  if (databricksProvider?.connectionStatus === 'connected' && databricksProvider.credentials.type === 'databricks' && databricksProvider.selectedModelId) {
+    const databricksApiKey = getApiKey('databricks');
+    const creds = databricksProvider.credentials;
+    // Build the serving endpoint URL and route through proxy for message transformation
+    const workspaceUrl = creds.workspaceUrl.replace(/\/$/, '');
+    const targetBaseUrl = `${workspaceUrl}/serving-endpoints`;
+
+    // Use proxy to transform messages (fix empty content in assistant messages with tool_calls)
+    const proxyInfo = await ensureDatabricksProxy(targetBaseUrl, databricksApiKey || undefined);
+    const modelId = databricksProvider.selectedModelId.replace(/^databricks\//, '');
+
+    providerConfigs.push({
+      id: 'databricks',
+      npm: '@ai-sdk/openai-compatible',
+      name: 'Databricks',
+      options: {
+        baseURL: proxyInfo.baseURL,
+        // Token is passed to proxy, not directly to AI SDK
+        apiKey: 'proxy-managed',
+      },
+      models: {
+        [modelId]: { name: modelId, tools: true },
+      },
+    });
+    console.log(`[OpenCode Config Builder] Databricks configured via proxy: ${modelId}`);
+  } else {
+    // Legacy config support
+    const databricksConfig = getDatabricksConfig();
+    if (databricksConfig?.enabled && activeModel?.provider === 'databricks') {
+      const databricksApiKey = getApiKey('databricks');
+      const workspaceUrl = databricksConfig.workspaceUrl.replace(/\/$/, '');
+      const targetBaseUrl = `${workspaceUrl}/serving-endpoints`;
+
+      const proxyInfo = await ensureDatabricksProxy(targetBaseUrl, databricksApiKey || undefined);
+      const modelId = activeModel.model.replace(/^databricks\//, '');
+
+      providerConfigs.push({
+        id: 'databricks',
+        npm: '@ai-sdk/openai-compatible',
+        name: 'Databricks',
+        options: {
+          baseURL: proxyInfo.baseURL,
+          apiKey: 'proxy-managed',
+        },
+        models: {
+          [modelId]: { name: modelId, tools: true },
+        },
+      });
+      console.log(`[OpenCode Config Builder] Databricks (legacy) configured via proxy: ${modelId}`);
     }
   }
 

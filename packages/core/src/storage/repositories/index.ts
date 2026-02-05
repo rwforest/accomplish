@@ -13,6 +13,8 @@ export {
   setAzureFoundryConfig,
   getLMStudioConfig,
   setLMStudioConfig,
+  getDatabricksConfig,
+  setDatabricksConfig,
   getOpenAiBaseUrl,
   setOpenAiBaseUrl,
   getAppSettings,

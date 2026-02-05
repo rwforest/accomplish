@@ -64,11 +64,14 @@ import {
   setLiteLLMConfig,
   getLMStudioConfig,
   setLMStudioConfig,
+  getDatabricksConfig,
+  setDatabricksConfig,
   testOllamaModelToolSupport,
   testOllamaConnection,
   testLMStudioConnection,
   fetchLMStudioModels,
   validateLMStudioConfig,
+  testDatabricksConnection,
 } from '@accomplish/core';
 import { safeParseJson } from '@accomplish/core';
 import {
@@ -110,6 +113,7 @@ import type {
   AzureFoundryConfig,
   LiteLLMConfig,
   LMStudioConfig,
+  DatabricksConfig,
   ToolSupportStatus,
 } from '@accomplish/shared';
 import { DEFAULT_PROVIDERS, ALLOWED_API_KEY_PROVIDERS, STANDARD_VALIDATION_PROVIDERS } from '@accomplish/shared';
@@ -820,6 +824,64 @@ export function registerIPCHandlers(): void {
       validateLMStudioConfig(config);
     }
     setLMStudioConfig(config);
+  });
+
+  // Databricks handlers
+  handle('databricks:test-connection', async (
+    _event: IpcMainInvokeEvent,
+    workspaceUrl: string,
+    apiToken: string
+  ) => {
+    return testDatabricksConnection(workspaceUrl, apiToken);
+  });
+
+  handle('databricks:get-config', async (_event: IpcMainInvokeEvent) => {
+    return getDatabricksConfig();
+  });
+
+  handle('databricks:set-config', async (_event: IpcMainInvokeEvent, config: DatabricksConfig | null) => {
+    if (config !== null) {
+      if (typeof config.workspaceUrl !== 'string' || !config.workspaceUrl.trim()) {
+        throw new Error('Invalid Databricks configuration: workspaceUrl is required');
+      }
+      if (typeof config.endpointName !== 'string' || !config.endpointName.trim()) {
+        throw new Error('Invalid Databricks configuration: endpointName is required');
+      }
+      if (typeof config.enabled !== 'boolean') {
+        throw new Error('Invalid Databricks configuration: enabled must be a boolean');
+      }
+      try {
+        validateHttpUrl(config.workspaceUrl, 'Databricks workspace URL');
+      } catch {
+        throw new Error('Invalid Databricks configuration: Invalid workspace URL format');
+      }
+    }
+    setDatabricksConfig(config);
+  });
+
+  handle('databricks:save-config', async (
+    _event: IpcMainInvokeEvent,
+    config: { workspaceUrl: string; endpointName: string; apiToken: string }
+  ) => {
+    const { workspaceUrl, endpointName, apiToken } = config;
+
+    // Store the API token
+    storeApiKey('databricks', apiToken);
+
+    // Save the config
+    const databricksConfig: DatabricksConfig = {
+      workspaceUrl: workspaceUrl.replace(/\/+$/, ''),
+      endpointName,
+      enabled: true,
+      lastValidated: Date.now(),
+    };
+    setDatabricksConfig(databricksConfig);
+
+    console.log('[Databricks] Config saved:', {
+      workspaceUrl,
+      endpointName,
+      hasApiToken: !!apiToken,
+    });
   });
 
   handle('api-keys:all', async (_event: IpcMainInvokeEvent) => {

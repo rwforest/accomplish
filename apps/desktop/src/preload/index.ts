@@ -189,6 +189,33 @@ const accomplishAPI = {
     models?: Array<{ id: string; name: string; toolSupport: 'supported' | 'unsupported' | 'unknown' }>;
   } | null): Promise<void> => ipcRenderer.invoke('lmstudio:set-config', config),
 
+  // Databricks configuration
+  testDatabricksConnection: (workspaceUrl: string, apiToken: string): Promise<{
+    success: boolean;
+    endpoints?: Array<{ id: string; name: string; state: string; creator?: string }>;
+    error?: string;
+  }> => ipcRenderer.invoke('databricks:test-connection', workspaceUrl, apiToken),
+
+  getDatabricksConfig: (): Promise<{
+    workspaceUrl: string;
+    endpointName: string;
+    enabled: boolean;
+    lastValidated?: number;
+  } | null> => ipcRenderer.invoke('databricks:get-config'),
+
+  setDatabricksConfig: (config: {
+    workspaceUrl: string;
+    endpointName: string;
+    enabled: boolean;
+    lastValidated?: number;
+  } | null): Promise<void> => ipcRenderer.invoke('databricks:set-config', config),
+
+  saveDatabricksConfig: (config: {
+    workspaceUrl: string;
+    endpointName: string;
+    apiToken: string;
+  }): Promise<void> => ipcRenderer.invoke('databricks:save-config', config),
+
   // Bedrock
   validateBedrockCredentials: (credentials: string) =>
     ipcRenderer.invoke('bedrock:validate', credentials),

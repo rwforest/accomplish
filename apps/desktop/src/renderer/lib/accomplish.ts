@@ -144,6 +144,30 @@ interface AccomplishAPI {
     models?: Array<{ id: string; name: string; toolSupport: ToolSupportStatus }>;
   } | null): Promise<void>;
 
+  // Databricks configuration
+  testDatabricksConnection(workspaceUrl: string, apiToken: string): Promise<{
+    success: boolean;
+    endpoints?: Array<{ id: string; name: string; state: string; creator?: string }>;
+    error?: string;
+  }>;
+  getDatabricksConfig(): Promise<{
+    workspaceUrl: string;
+    endpointName: string;
+    enabled: boolean;
+    lastValidated?: number;
+  } | null>;
+  setDatabricksConfig(config: {
+    workspaceUrl: string;
+    endpointName: string;
+    enabled: boolean;
+    lastValidated?: number;
+  } | null): Promise<void>;
+  saveDatabricksConfig(config: {
+    workspaceUrl: string;
+    endpointName: string;
+    apiToken: string;
+  }): Promise<void>;
+
   // Bedrock configuration
   validateBedrockCredentials(credentials: string): Promise<{ valid: boolean; error?: string }>;
   saveBedrockCredentials(credentials: string): Promise<ApiKeyConfig>;

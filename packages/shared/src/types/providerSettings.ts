@@ -8,13 +8,14 @@ export type ProviderId =
   | 'zai'
   | 'bedrock'
   | 'azure-foundry'
+  | 'databricks'
   | 'ollama'
   | 'openrouter'
   | 'litellm'
   | 'minimax'
   | 'lmstudio';
 
-export type ProviderCategory = 'classic' | 'aws' | 'azure' | 'local' | 'proxy' | 'hybrid';
+export type ProviderCategory = 'classic' | 'aws' | 'azure' | 'databricks' | 'local' | 'proxy' | 'hybrid';
 
 export interface ProviderMeta {
   id: ProviderId;
@@ -40,6 +41,7 @@ export const PROVIDER_META: Record<ProviderId, ProviderMeta> = {
   litellm: { id: 'litellm', name: 'LiteLLM', category: 'hybrid', label: 'Service', logoKey: 'liteLLM' },
   minimax: { id: 'minimax', name: 'MiniMax', category: 'classic', label: 'Service', logoKey: 'minimax', helpUrl: 'https://platform.minimax.io/user-center/basic-information/interface-key' },
   lmstudio: { id: 'lmstudio', name: 'LM Studio', category: 'local', label: 'Local Models', logoKey: 'lmstudio', helpUrl: 'https://lmstudio.ai/' },
+  databricks: { id: 'databricks', name: 'Databricks', category: 'databricks', label: 'Service', logoKey: 'databricks', helpUrl: 'https://docs.databricks.com/en/machine-learning/foundation-models/index.html' },
 };
 
 export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -96,6 +98,13 @@ export interface AzureFoundryCredentials {
   keyPrefix?: string;
 }
 
+export interface DatabricksCredentials {
+  type: 'databricks';
+  workspaceUrl: string;
+  endpointName: string;
+  keyPrefix: string;
+}
+
 export interface OAuthCredentials {
   type: 'oauth';
   oauthProvider: 'chatgpt';
@@ -109,6 +118,7 @@ export type ProviderCredentials =
   | LiteLLMCredentials
   | ZaiCredentials
   | AzureFoundryCredentials
+  | DatabricksCredentials
   | LMStudioCredentials
   | OAuthCredentials;
 
@@ -177,6 +187,7 @@ export const PROVIDER_ID_TO_OPENCODE: Record<ProviderId, string> = {
   zai: 'zai-coding-plan',
   bedrock: 'amazon-bedrock',
   'azure-foundry': 'azure-foundry',
+  databricks: 'databricks',
   ollama: 'ollama',
   openrouter: 'openrouter',
   litellm: 'litellm',

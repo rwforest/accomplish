@@ -55,3 +55,11 @@ export {
   type LMStudioConnectionOptions,
   type LMStudioFetchModelsOptions,
 } from './lmstudio.js';
+export {
+  testDatabricksConnection,
+  validateDatabricksEndpoint,
+  fetchDatabricksEndpoints,
+  type DatabricksConnectionResult,
+  type DatabricksEndpoint,
+  type FetchDatabricksEndpointsOptions,
+} from './databricks.js';

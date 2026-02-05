@@ -11,6 +11,7 @@ import {
   OpenRouterProviderForm,
   LiteLLMProviderForm,
   LMStudioProviderForm,
+  DatabricksProviderForm,
 } from './providers';
 import { ZaiProviderForm } from './providers/ZaiProviderForm';
 import { settingsVariants, settingsTransitions } from '@/lib/animations';
@@ -123,6 +124,17 @@ export function ProviderSettingsPanel({
       case 'hybrid':
         return (
           <LiteLLMProviderForm
+            connectedProvider={connectedProvider}
+            onConnect={onConnect}
+            onDisconnect={onDisconnect}
+            onModelChange={onModelChange}
+            showModelError={showModelError}
+          />
+        );
+
+      case 'databricks':
+        return (
+          <DatabricksProviderForm
             connectedProvider={connectedProvider}
             onConnect={onConnect}
             onDisconnect={onDisconnect}
