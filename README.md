@@ -143,6 +143,7 @@ Accomplish is an open source AI desktop agent that automates file management, do
 - MiniMax
 - Amazon Bedrock
 - Azure Foundry
+- Databricks
 - OpenRouter
 - LiteLLM
 - Ollama (local models)
